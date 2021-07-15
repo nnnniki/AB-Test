@@ -1,0 +1,65 @@
+---
+title: "AB_Test"
+author: "Niki Chen"
+date: "6/15/2021"
+output: pdf_document
+---
+
+```{r}
+library(readr)
+ab_test <- read_csv("ads_test.csv")
+ab_test <- cbind(ab_test,"Test" = ifelse(ab_test$group == "control", "A","B"))
+head(ab_test)
+```
+```{r}
+# calculate clk rate
+library(plyr)
+ddply(ab_test,
+      .(Test),
+      summarise,
+      clr = sum(clk)/length(clk))   
+```
+
+### From above, we could find that the clk rate for Test A is 12.05% and the clk rate for Test B is 12.30%.
+
+
+```{r}
+ads_test <- read_csv("ads_test.csv")
+ads_test <- ads_test[,c(4,6)]
+head(ads_test, 10)
+prop <- table(ads_test)
+prop
+prop_abs <- addmargins(prop)
+prop_abs
+prop_rel <- prop.table(prop, 1)
+prop_rel
+prop.test(prop,correct=F,alternative = "greater")
+#prop.test(n=c(147239, 147239),x=c(147239*0.1204776, 147239*0.1229701), alternative = "less")
+```
+
+### Denotes the click rate for test B (advertising_pid = 430539_1007) is P0 and the click rate for test A (advertising_pid = 430548_1007) is P1
+
+### The hypothesis:  
+
+$H_{0}$ : P0 (The click rate for Test B) <= P1 (The click rate for test A)
+
+$H_{1}$ : P0 (The click rate for Test B) > P1 (The click rate for test A)
+
+### Since P value is 0.0193, which is less than 0.05 ($\alpha$ = 0.05), we reject $H_0$ and conclude that P0 (The click rate for Test B) > P1 (The click rate for test A)
+
+```{r}
+ab_test_summary <- ddply (ab_test,
+                          .(Test),
+                          users=length(user_id),
+                          summarise,
+                          cl=sum(clk),
+                          clr = sum(clk)/length(clk))
+                         
+head(ab_test_summary)
+```
+
+### Conclusion: Accoding to the prop.test and ab_test_summary table, with the same amount users, we could conclude that the effects of test B is better than the effects of test A, and test B (advertising_pid = 430539_1007) has more clicks and higher click rate, which sugests that we should choose test B and increase the advertising of advertising_pid = 430539_1007.
+
+
+
+
